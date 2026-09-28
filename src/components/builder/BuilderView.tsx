@@ -14,7 +14,8 @@ import {
   Check,
   Eye,
   Edit2,
-  ChevronLeft
+  ChevronLeft,
+  Bot
 } from 'lucide-react';
 
 interface BuilderViewProps {
@@ -147,6 +148,16 @@ export const BuilderView: React.FC<BuilderViewProps> = ({
           >
             <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
             <span>AI Assistant</span>
+          </button>
+
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('open-n8n-chat'))}
+            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg transition-colors"
+            title="Open n8n AI Chat Assistant"
+          >
+            <Bot className="w-3.5 h-3.5 text-purple-600" />
+            <span>n8n Chat</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
           </button>
 
           <button

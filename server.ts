@@ -341,6 +341,135 @@ Return JSON ONLY:
   }
 });
 
+// 7. n8n Chatbot Webhook Proxy
+const DEFAULT_N8N_URL = 'https://pooji2008.app.n8n.cloud/webhook/c7259331-2aa8-4a0a-918c-13c2933825e6/chat';
+
+app.post('/api/n8n/chat', async (req: Request, res: Response) => {
+  const { message, chatInput, sessionId, webhookUrl, resumeContext, isPing } = req.body;
+  const targetUrl = (webhookUrl || DEFAULT_N8N_URL).trim();
+  const textMessage = (message || chatInput || '').trim();
+
+  // If ping only, test connection
+  if (isPing) {
+    try {
+      const response = await fetch(targetUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'sendMessage',
+          chatInput: 'ping',
+          message: 'ping',
+          sessionId: sessionId || 'test-ping',
+        }),
+      });
+
+      const responseText = await response.text();
+      if (response.status === 404 && responseText.includes('is not registered')) {
+        return res.json({
+          status: 'inactive_hint',
+          reply: 'Workflow reached, but it is currently inactive in n8n. Toggle the Active switch to ON in your n8n canvas.',
+        });
+      }
+      return res.json({
+        status: response.ok ? 'active' : 'fallback',
+        reply: `Received HTTP ${response.status}`,
+      });
+    } catch (err: any) {
+      return res.json({ status: 'fallback', reply: err.message });
+    }
+  }
+
+  // Normal Chat Message
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 18000); // 18s timeout
+
+    const n8nResponse = await fetch(targetUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'ResumeCraft-Bot/1.0',
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        action: 'sendMessage',
+        chatInput: textMessage,
+        message: textMessage,
+        sessionId: sessionId || 'rc-session-default',
+        context: resumeContext || {},
+      }),
+    });
+
+    clearTimeout(timeoutId);
+
+    const rawBody = await n8nResponse.text();
+
+    // Check if n8n returned 404 (workflow inactive)
+    if (n8nResponse.status === 404 && rawBody.includes('is not registered')) {
+      // Generate a helpful response via Gemini while explaining the n8n activation state
+      const aiPrompt = `You are the ResumeCraft AI assistant. A user asked: "${textMessage}".
+Candidate Context (if any): ${JSON.stringify(resumeContext || {})}
+Provide an encouraging, clear, and actionable answer about resumes, career tips, or interview preparation.`;
+
+      const aiFallbackAnswer = await callGemini(
+        aiPrompt,
+        "Here are tips for crafting an outstanding resume: focus on measurable accomplishments (Google XYZ formula), keep your layout clean and ATS-friendly, and ensure contact information is easily accessible."
+      );
+
+      return res.json({
+        status: 'inactive_hint',
+        reply: `⚠️ *Note: Your n8n workflow at pooji2008.app.n8n.cloud is currently Inactive. In your n8n editor, toggle the 'Active' switch in the top-right corner to route directly through your custom n8n nodes.*\n\n${aiFallbackAnswer}`,
+      });
+    }
+
+    // Try parsing n8n response as JSON
+    try {
+      const parsed = JSON.parse(rawBody);
+      let reply = '';
+      if (typeof parsed === 'string') {
+        reply = parsed;
+      } else if (parsed.output) {
+        reply = parsed.output;
+      } else if (parsed.text) {
+        reply = parsed.text;
+      } else if (parsed.response) {
+        reply = parsed.response;
+      } else if (parsed.message) {
+        reply = parsed.message;
+      } else if (Array.isArray(parsed) && parsed[0]?.output) {
+        reply = parsed[0].output;
+      } else {
+        reply = rawBody;
+      }
+
+      return res.json({
+        status: 'active',
+        reply,
+      });
+    } catch {
+      return res.json({
+        status: 'active',
+        reply: rawBody || 'Received response from n8n.',
+      });
+    }
+  } catch (error: any) {
+    console.warn('n8n webhook call failed or timed out:', error);
+
+    // Call Gemini as intelligent fallback
+    const aiPrompt = `You are ResumeCraft AI. The user asked: "${textMessage}".
+Answer in a concise, friendly, and structured manner with bullet points if applicable.`;
+    const fallbackAnswer = await callGemini(
+      aiPrompt,
+      "I'm here to help with your resume questions! Feel free to ask about ATS optimization, formatting, skills, or writing project bullet points."
+    );
+
+    return res.json({
+      status: 'fallback',
+      reply: fallbackAnswer,
+    });
+  }
+});
+
 // Start Server with Vite or Static
 async function startServer() {
   if (!isProduction) {

@@ -16,6 +16,7 @@ import { AiAssistantModal } from './components/modals/AiAssistantModal';
 import { AuthModal } from './components/modals/AuthModal';
 import { ShareModal } from './components/modals/ShareModal';
 import { ContactModal, PrivacyModal, TermsModal } from './components/modals/PolicyModals';
+import { N8nChatWidget } from './components/chat/N8nChatWidget';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<'landing' | 'builder' | 'dashboard'>('landing');
@@ -254,6 +255,9 @@ export default function App() {
           onClose={() => setIsTermsOpen(false)}
         />
       )}
+
+      {/* Floating n8n AI Chat Assistant */}
+      <N8nChatWidget activeResume={storageService.getActiveResume()} />
     </div>
   );
 }

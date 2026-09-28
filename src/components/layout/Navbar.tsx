@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { UserAccount } from '../../types/resume';
-import { FileText, Sparkles, User, LogOut, Menu, X, PlusCircle } from 'lucide-react';
+import { FileText, Sparkles, User, LogOut, Menu, X, PlusCircle, Bot } from 'lucide-react';
 
 interface NavbarProps {
   currentView: 'landing' | 'builder' | 'dashboard';
@@ -82,6 +82,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Zone 3: Primary Actions */}
         <div className="hidden md:flex items-center gap-3">
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('open-n8n-chat'))}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-200/80 transition-all hover:scale-102 active:scale-98"
+            title="Open n8n AI Assistant"
+          >
+            <Bot className="w-3.5 h-3.5 text-indigo-600" />
+            <span>AI Chat</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          </button>
+
           {user ? (
             <div className="flex items-center gap-2.5">
               <button
@@ -171,6 +181,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                 Log In / Sign Up
               </button>
             )}
+
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                window.dispatchEvent(new CustomEvent('open-n8n-chat'));
+              }}
+              className="w-full py-2 px-3 text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg flex items-center justify-center gap-2"
+            >
+              <Bot className="w-4 h-4 text-indigo-600" />
+              <span>n8n AI Assistant</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            </button>
 
             <button
               onClick={() => handleNavClick('builder')}
