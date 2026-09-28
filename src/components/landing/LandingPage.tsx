@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { sampleTemplatesList } from '../../data/sampleResumes';
 import { TemplateId } from '../../types/resume';
+import heroImage from '../../assets/images/resume_builder_hero_1790581573604.jpg';
 import {
   FileText,
   Sparkles,
@@ -110,9 +111,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="lg:col-span-5 relative">
               <div className="relative mx-auto max-w-md lg:max-w-none rounded-2xl overflow-hidden shadow-2xl border border-slate-200/80 bg-white">
                 <img
-                  src="/src/assets/images/resume_builder_hero_1790581573604.jpg"
+                  src={heroImage}
                   alt="ResumeCraft Professional Resume Builder Preview"
-                  referrerPolicy="no-referrer"
                   className="w-full h-auto object-cover"
                 />
                 <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-md p-3.5 rounded-xl border border-slate-200 shadow-md flex items-center justify-between">
