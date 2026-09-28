@@ -1,0 +1,6 @@
+{
+  "name": "ResumeCraft - Professional Resume Builder",
+  "description": "Create professional, ATS-friendly resumes in minutes with AI writing assistance, customizable modern templates, and instant PDF export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
